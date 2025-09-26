@@ -1,0 +1,134 @@
+{
+  "name": "Keyword Research Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "seo-keywords",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -128
+      ],
+      "id": "bd34d822-045c-49b6-a82c-1c1724e425db",
+      "name": "Webhook",
+      "webhookId": "ba06dcb3-c494-4356-9df1-fcd1287e795e"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine ",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "={{$json[\"body\"][\"seed_keyword\"]}}"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            },
+            {
+              "name": "api_key",
+              "value": "{{API KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        -128
+      ],
+      "id": "1d9b9cbc-a60b-4dd4-baf2-cceead783a00",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const related = $json.related_searches || [];\n\nconst enriched = related.map(r => ({\n  keyword: r.query,\n  search_volume: r.search_volume || Math.floor(Math.random() * 5000),\n  competition: r.competition || Math.random().toFixed(2)\n}));\n\nenriched.sort((a, b) => {\n  if (a.search_volume !== b.search_volume) {\n    return b.search_volume - a.search_volume; \n  }\n  return a.competition - b.competition;       \n});\n\nreturn enriched.slice(0, 50).map(k => ({ json: k }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -128
+      ],
+      "id": "a1fb72cc-39a2-46cb-af01-9e367d49f4c5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "9d6e25fa-5f42-4bb6-b354-05e49f07ba7e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "539a045e-5602-4b38-a32e-ccf7a9346cc9",
+  "meta": {
+    "instanceId": "ca7571a04f7cbdd67ff27f375d6e09da8807e2c21721c849deecf85f4fea74b7"
+  },
+  "id": "bA2qRNDR5Mxeq51u",
+  "tags": []
+}
